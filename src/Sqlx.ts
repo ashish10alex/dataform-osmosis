@@ -21,6 +21,10 @@ type FileSqlxConfig = SqlxConfig & {
 const CONFIG_BLOCK_PATTERN =
   /config\s*\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}/;
 
+// Matches expressions like `columns: object.property,`
+const JS_EXPRESSION_PATTERN =
+    /columns\s*:\s*[a-zA-Z_$][a-zA-Z_$0-9]*\.[a-zA-Z_$][a-zA-Z_$0-9]*\s*,?/g;
+
 class Sqlx {
   public filePath: string;
   private config: SqlxConfig;
@@ -50,7 +54,9 @@ class Sqlx {
     try {
       const configContent = configMatch[0]
         .replace(/config\s*/, "")
+        .replace(JS_EXPRESSION_PATTERN, "");
       config = json5.parse(configContent);
+
     } catch (error) {
       throw new Error(`Failed to parse config in ${this.filePath}: ${error}`);
     }
